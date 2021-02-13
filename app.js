@@ -1,15 +1,11 @@
-const express = require('express')
-const session = require('express-session')
+const express = require('express') 
 require('dotenv').config()
-const cors = require('cors')
-const redis = require('redis')
-const connectRedis = require('connect-redis')
-const path = require('path') 
+const cors = require('cors') 
+const path = require('path' ) 
+const errorHandler = require('./middleware/ErrorHandlerMiddleware') 
 const sequelize = require('./db/db')
-const redisClient = require('./db/redis')
 const models = require('./models/models')
 const router = require('./routes/index')
-const errorHandler = require('./middleware/ErrorHandlerMiddleware')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -29,8 +25,6 @@ const start = async () => {
   try {
     await sequelize.authenticate()
     await sequelize.sync()
-    const token = redisClient.get("key1", (err, reply) => console.log(reply))
-    token()
     app.listen(PORT, () => {
       console.log('[OK] Server has been started on port', PORT, '...')
     })

@@ -3,13 +3,14 @@ const { DataTypes } = require('sequelize')
 
 const User = sequelize.define('user', {
   id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-  name: {type: DataTypes.STRING, allowNull: false},
-  surname: {type: DataTypes.STRING, allowNull: false},
+  name: {type: DataTypes.STRING, allowNull: false, defaultValue: String(Date.now())},
+  surname: {type: DataTypes.STRING},
   email: {type: DataTypes.STRING, unique: true, allowNull: false},
   password: {type: DataTypes.STRING, allowNull: false},
-  dateSince: {type: DataTypes.DATE, defaultValue: sequelize.NOW},
+  dateSince: {type: DataTypes.DATE, defaultValue: Date.now()},
   confirmed: {type: DataTypes.INTEGER, defaultValue: '0'},
-  role: {type: DataTypes.ENUM('USER', 'ADMIN', 'MODERATOR'), defaultValue: 'USER'},
+  role: {type: DataTypes.ENUM('user', 'admin'), defaultValue: 'user'},
+  status: {type: DataTypes.ENUM('common', 'premium'), defaultValue: 'common'},
   }, {
     timestamps: false
   }

@@ -3,9 +3,9 @@ const ApiError = require('../error/ApiError')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
-const generateJwt = (id, email, role) => {
+const generateJwt = (id, email, name, surname, role) => {
   return jwt.sign(
-    {id: id, email, role}, 
+    {id, email, name, surname, role}, 
     process.env.SECRET_KEY,
     {expiresIn: '24h'})
 }
@@ -14,9 +14,6 @@ class UserController {
   async registration(req, res, next) {
     const { email, password, role } = req.body
 
-    const name = String(Date.now()),
-    surname = ''
-
     const candidate = await User.findOne({where: {email}})
     if (candidate) {
       return next(ApiError.badRequest('Пользователь с таким Email уже существует'))
@@ -24,7 +21,7 @@ class UserController {
 
     const hashPassword = await bcrypt.hash(password, 5)
     const user = await User.create({
-      name, surname, email, password: hashPassword
+      email, password: hashPassword, role
     })
     
     const token = generateJwt(user.id, user.email, user.role)
@@ -41,12 +38,28 @@ class UserController {
     if (!comparePassword) {
       return next(ApiError.internal('Неверный пароль'))
     }
-    const token = generateJwt(user.id, user.email, user.role)
+    const token = generateJwt(user.id, user.email, user.name, user.surname, user.role)
     return res.json({token})
   }
 
+  async update(req, res, next) {
+    const {id} = req.params
+    const { name, surname, email, password } = req.body
+    if (password) {
+      const hashPassword = await bcrypt.hash(password, 5)
+      const user = await User.update({name, surname, email, hashPassword}, {where: {id}})
+      const updatedUser = await User.findOne({where: {id}})
+      return res.json(updatedUser)
+    } else {
+      const user = await User.update({name, surname, email}, {where: {id}})
+      const updatedUser = await User.findOne({where: {id}})
+      return res.json(updatedUser)
+    }
+    
+  }
+
   async check(req, res, next) {
-    const token = generateJwt(req.user.id, req.user.email, req.user.role)
+    const token = generateJwt(req.user.id, req.user.email, req.user.name, req.user.surname, req.user.role)
     return res.json({token})
   }
 }
